@@ -13,13 +13,14 @@ pub fn Indexed(comptime T: type) type {
 
 fn isIndexed(comptime T: type) bool {
     const type_info = @typeInfo(T);
+    // @compileLog(type_info.@"struct");
     return switch (type_info) {
-        .Struct => std.mem.indexOf(u8, @typeName(T), "event.Indexed") != null,
+        .@"struct" => std.mem.indexOf(u8, @typeName(T), "event.Indexed") != null,
         else => false,
     };
 }
 
-// @Copyright: resue code in https://github.com/chrisco512/zigitrum
+// resue code in https://github.com/chrisco512/zigitrum
 pub fn getEventSelector(comptime name: []const u8, Params: type) ![32]u8 {
     // building selector as compile time
     const signature = comptime blk: {

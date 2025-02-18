@@ -154,7 +154,7 @@ pub fn dupeString(str: []const u8) ![]u8 {
 }
 
 pub fn isSliceUndefined(slice: []const u8) bool {
-    return slice.ptr == undefined or slice.len == 0;
+    return slice.len == 0;
 }
 
 pub const AddressUtils = struct {
@@ -257,11 +257,11 @@ pub fn abi_encode(comptime T: type, value: T) ![32]u8 {
     return result;
 }
 
-// @Copyright: resue code in https://github.com/chrisco512/zigitrum
+// resue code in https://github.com/chrisco512/zigitrum
 // Converts a Zig type to a Solidity ABI type string
 pub fn zigToSolidityType(T: type) []const u8 {
     return switch (@typeInfo(T)) {
-        .Int => |info| switch (info.signedness) {
+        .int => |info| switch (info.signedness) {
             .signed => switch (info.bits) {
                 8 => "int8",
                 16 => "int16",
@@ -281,13 +281,13 @@ pub fn zigToSolidityType(T: type) []const u8 {
                 else => @compileError("Unsupported unsigned integer type"),
             },
         },
-        .Array => |info| switch (info.len) {
+        .array => |info| switch (info.len) {
             20 => "address",
             32 => "bytes32",
             else => @compileError("Unsupported array length"),
         },
-        .Bool => "bool",
-        .Void => "",
+        .bool => "bool",
+        .void => "",
         else => @compileError("Unsupported type: " ++ @typeName(T)),
     };
 }
@@ -372,7 +372,7 @@ pub fn method_router(selector: [4]u8, data: []u8, contract: *erc20.ERC20) !void 
     }
 }
 
-// @Copyright: resue code in https://github.com/chrisco512/zigitrum
+// resue code in https://github.com/chrisco512/zigitrum
 // Instead of keccak256() in hostio.zig running on runtime,
 // this fn will only be used to compute the keccak256 hash during compile time
 // Comptime fn for computing the keccak256 hash of a string
