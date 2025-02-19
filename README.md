@@ -5,7 +5,7 @@ A zig stylus program of ERC20 token
 ```bash
 zig build-exe ./src/main.zig -target wasm32-freestanding -fno-entry --export=user_entrypoint -OReleaseSmall
 ```
-zig version: 0.13.0
+zig version: 0.14.0
 
 
 ## Note
