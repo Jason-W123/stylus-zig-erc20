@@ -19,10 +19,10 @@ pub const ERC20 = struct {
     const DECIMALS: u8 = 18;
 
     // Define state here
-    total_supply: U256Storage,
+    _total_supply: U256Storage,
     _owner: AddressStorage,
-    balances: MappingStorage(Address, U256Storage),
-    allowances: MappingStorage(Address, MappingStorage(Address, U256Storage)),
+    _balances: MappingStorage(Address, U256Storage),
+    _allowances: MappingStorage(Address, MappingStorage(Address, U256Storage)),
 
     // Define event with EventEmitter
     Transfer: EventEmitter("Transfer", struct {
@@ -45,7 +45,7 @@ pub const ERC20 = struct {
         return DECIMALS;
     }
 
-    pub fn initiate(self: *@This(), total_supply: u256) !void {
+    pub fn initiate(self: *@This(), _supply: u256) !void {
         // First, check if it is already initiated
         const old_owner = try self.owner();
         const address_utils = utils.AddressUtils{};
@@ -55,10 +55,10 @@ pub const ERC20 = struct {
 
         // Set owner, and mint total_supply number of tokens to the owner
         const sender = try hostio.get_msg_sender();
-        try self.total_supply.set_value(total_supply);
+        try self._total_supply.set_value(_supply);
         try self._owner.set_value(sender);
-        var balances_setter = try self.balances.setter(sender);
-        try balances_setter.set_value(total_supply);
+        var balances_setter = try self._balances.setter(sender);
+        try balances_setter.set_value(_supply);
         const block_number = hostio.get_block_number();
 
         // emit initiated event
@@ -74,21 +74,21 @@ pub const ERC20 = struct {
         return value;
     }
 
-    pub fn totalSupply(self: *@This()) ![]u8 {
-        const value = try self.total_supply.get_value();
+    pub fn total_supply(self: *@This()) ![]u8 {
+        const value = try self._total_supply.get_value();
 
-        return utils.u256ToBytes(value);
+        return utils.u256_to_bytes(value);
     }
 
     pub fn balanceOf(self: *@This(), address: Address) !u256 {
-        const balance = try self.balances.get(address);
+        const balance = try self._balances.get(address);
 
         return balance;
     }
 
     fn _transfer(self: *@This(), from: Address, to: Address, value: u256) !bool {
-        const from_balance = try self.balances.get(from);
-        const to_balance = try self.balances.get(to);
+        const from_balance = try self._balances.get(from);
+        const to_balance = try self._balances.get(to);
         if (from_balance < value) {
             return false;
         }
@@ -98,8 +98,8 @@ pub const ERC20 = struct {
         const new_to_balance = to_balance + value;
 
         // Update balances
-        var from_balances_setter = try self.balances.setter(from);
-        var to_balances_setter = try self.balances.setter(to);
+        var from_balances_setter = try self._balances.setter(from);
+        var to_balances_setter = try self._balances.setter(to);
         try from_balances_setter.set_value(new_from_balance);
         try to_balances_setter.set_value(new_to_balance);
 
@@ -120,7 +120,7 @@ pub const ERC20 = struct {
     pub fn transferFrom(self: *@This(), from: Address, to: Address, value: u256) !bool {
         const msg_sender = try hostio.get_msg_sender();
         // Get value from allowances, this is nested mapping, so needs to call twice setter
-        var from_allowance_map = try self.allowances.setter(from);
+        var from_allowance_map = try self._allowances.setter(from);
         var from_sender_allowance = try from_allowance_map.setter(msg_sender);
         // Finally get the storage and then set the value
         const old_from_to_allowance = try from_sender_allowance.get_value();
@@ -136,13 +136,13 @@ pub const ERC20 = struct {
 
     pub fn approve(self: *@This(), spender: Address, value: u256) !bool {
         const sender = try hostio.get_msg_sender();
-        const sender_balance = try self.balances.get(sender);
+        const sender_balance = try self._balances.get(sender);
 
         if (sender_balance < value) {
             return false;
         }
 
-        var sender_allowance_map = try self.allowances.setter(sender);
+        var sender_allowance_map = try self._allowances.setter(sender);
         var sender_spender_allowance = try sender_allowance_map.setter(spender);
 
         try sender_spender_allowance.set_value(value);
@@ -156,7 +156,7 @@ pub const ERC20 = struct {
     }
 
     pub fn allowance(self: *@This(), owner_addr: Address, spender: Address) !u256 {
-        var owner_allowance_map = try self.allowances.setter(owner_addr);
+        var owner_allowance_map = try self._allowances.setter(owner_addr);
         var sender_spender_allowance = try owner_allowance_map.setter(spender);
         const sender_spender_allowance_value = try sender_spender_allowance.get_value();
         return sender_spender_allowance_value;

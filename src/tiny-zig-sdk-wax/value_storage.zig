@@ -22,18 +22,18 @@ pub const U256Storage = struct {
     }
 
     pub fn set_value(self: *@This(), value: u256) !void {
-        const offset_bytes = try utils.bytes32ToBytes(self.offset);
-        const value_bytes = try utils.u256ToBytes(value);
+        const offset_bytes = try utils.bytes32_to_bytes(self.offset);
+        const value_bytes = try utils.u256_to_bytes(value);
         try hostio.write_storage(offset_bytes, value_bytes);
         self.cache = value_bytes;
     }
 
     pub fn get_value(self: *@This()) !u256 {
-        if (utils.isSliceUndefined(self.cache)) {
-            const offset_bytes = try utils.bytes32ToBytes(self.offset);
+        if (utils.is_slice_undefined(self.cache)) {
+            const offset_bytes = try utils.bytes32_to_bytes(self.offset);
             self.cache = try hostio.read_storage(offset_bytes);
         }
-        return utils.bytesToU256(self.cache);
+        return utils.bytes_to_u256(self.cache);
     }
 };
 
@@ -51,13 +51,13 @@ pub const BoolStorage = struct {
 
     pub fn set_value(self: *@This(), value: bool) !void {
         const offset_bytes = try utils.bytes32ToBytes(self.offset);
-        const value_bytes = try utils.boolToBytes(value);
+        const value_bytes = try utils.bool_to_bytes(value);
         try hostio.write_storage(offset_bytes, value_bytes);
         self.cache = value_bytes;
     }
 
     pub fn get_value(self: *@This()) !bool {
-        if (utils.isSliceUndefined(self.cache)) {
+        if (utils.is_slice_undefined(self.cache)) {
             const offset_bytes = try utils.bytes32ToBytes(self.offset);
             self.cache = try hostio.read_storage(offset_bytes);
         }
@@ -78,18 +78,18 @@ pub const AddressStorage = struct {
     }
 
     pub fn set_value(self: *@This(), value: Address) !void {
-        const offset_bytes = try utils.bytes32ToBytes(self.offset);
-        const address_bytes = try utils.addressToBytes(value);
+        const offset_bytes = try utils.bytes32_to_bytes(self.offset);
+        const address_bytes = try utils.address_to_bytes(value);
         try hostio.write_storage(offset_bytes, address_bytes);
         self.cache = address_bytes;
     }
 
     pub fn get_value(self: *@This()) !Address {
-        if (utils.isSliceUndefined(self.cache)) {
-            const offset_bytes = try utils.bytes32ToBytes(self.offset);
+        if (utils.is_slice_undefined(self.cache)) {
+            const offset_bytes = try utils.bytes32_to_bytes(self.offset);
             self.cache = try hostio.read_storage(offset_bytes);
         }
-        const result = utils.bytesToAddress(self.cache);
+        const result = utils.bytes_to_address(self.cache);
         return result;
     }
 };
@@ -114,7 +114,7 @@ pub const Bytes32Storage = struct {
     }
 
     pub fn get_value(self: *@This()) ![32]u8 {
-        if (utils.isSliceUndefined(self.cache)) {
+        if (utils.is_slice_undefined(self.cache)) {
             const offset_bytes = try utils.bytes32ToBytes(self.offset);
             self.cache = try hostio.read_storage(offset_bytes);
         }
@@ -126,8 +126,8 @@ pub const Bytes32Storage = struct {
 
 pub fn MappingStorage(comptime KeyType: type, comptime ValueStorageType: type) type {
     const value_inner_type: type = ValueStorageType.inner_type;
-    const key_utils = utils.getValueUtils(KeyType);
-    const value_utils = utils.getValueUtils(value_inner_type);
+    const key_utils = utils.get_value_utils(KeyType);
+    const value_utils = utils.get_value_utils(value_inner_type);
     const converter_type = struct {
         key_utils: key_utils,
         value_utils: value_utils,
@@ -195,7 +195,7 @@ pub fn VecStorage(comptime ElementStorageType: type) type {
         }
 
         fn compute_array_slot(slot: [32]u8, index: u256) ![32]u8 {
-            const index_bytes = try utils.u256ToBytes(index);
+            const index_bytes = try utils.u256_to_bytes(index);
             var concat = try utils.allocator.alloc(u8, 64);
             defer utils.allocator.free(concat);
 
@@ -248,20 +248,20 @@ pub fn SolStorage(comptime Self: type) type {
             comptime var offset: u32 = 0;
             inline for (std.meta.fields(Self)) |field| {
                 @field(result, field.name) = switch (field.type) {
-                    U256Storage => field.type.init(utils.u32ToBytes32(offset)),
-                    AddressStorage => field.type.init(utils.u32ToBytes32(offset)),
-                    BoolStorage => field.type.init(utils.u32ToBytes32(offset)),
-                    Bytes32Storage => field.type.init(utils.u32ToBytes32(offset)),
+                    U256Storage => field.type.init(utils.u32_to_bytes32(offset)),
+                    AddressStorage => field.type.init(utils.u32_to_bytes32(offset)),
+                    BoolStorage => field.type.init(utils.u32_to_bytes32(offset)),
+                    Bytes32Storage => field.type.init(utils.u32_to_bytes32(offset)),
                     // Todo, support edge case.
                     else => blk: {
                         @setEvalBranchQuota(100000);
                         const type_name = @typeName(field.type);
                         // @compileLog("type_name: {}", .{type_name});
                         if (std.mem.indexOf(u8, type_name, "MappingStorage") != null) {
-                            const offset_bytes = utils.u32ToBytes32(offset);
+                            const offset_bytes = utils.u32_to_bytes32(offset);
                             break :blk field.type.init(offset_bytes);
                         } else if (std.mem.indexOf(u8, type_name, "VecStorage") != null) {
-                            const offset_bytes = utils.u32ToBytes32(offset);
+                            const offset_bytes = utils.u32_to_bytes32(offset);
                             break :blk field.type.init(offset_bytes);
                         } else if (std.mem.indexOf(u8, type_name, "EventEmitter") != null) {
                             break :blk .{}; // Initialize event with empty struct
