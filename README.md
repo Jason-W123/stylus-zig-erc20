@@ -1,5 +1,5 @@
 # stylus-zig-erc20
-A zig stylus program of ERC20 token
+A zig stylus program of ERC20 token and partial functions of simple stylus zig sdk example implementation.
 
 ## build
 ```bash
@@ -9,4 +9,4 @@ zig version: 0.13.0
 
 
 ## Note
-This is still under deployment
+This repo is only for demo, and the stylus zig sdk (wax) under ./src/tiny-zig-sdk-wax should not be used directly on any production/mainnet deployment as it doesn't get any audit.
