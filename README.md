@@ -9,4 +9,4 @@ zig version: 0.13.0
 
 
 ## Note
-This repo is only for demo, and the stylus zig sdk (wax) under ./src/tiny-zig-sdk-wax should not be used directly on any production/mainnet deployment as it doesn't get any audit.
+This repo is only for demo, and the stylus zig sdk (wax) under `./src/tiny-zig-sdk-wax` should not be used directly on any production/mainnet deployment as it doesn't get any audit.
