@@ -35,17 +35,17 @@ pub fn left_pad(slice: []u8, size: usize) ![]u8 {
     return output;
 }
 
-pub fn bytes32ToU256(bytes: [32]u8) u256 {
+pub fn bytes32_to_U256(bytes: [32]u8) u256 {
     return std.mem.readInt(u256, &bytes, .big);
 }
 
-pub fn bytes32ToBytes(bytes: [32]u8) ![]u8 {
+pub fn bytes32_to_bytes(bytes: [32]u8) ![]u8 {
     const result = try allocator.alloc(u8, 32);
     std.mem.copyBackwards(u8, result, &bytes);
     return result;
 }
 
-pub fn bytesToBytes32(bytes: []const u8) ![32]u8 {
+pub fn bytes_to_bytes32(bytes: []const u8) ![32]u8 {
     if (bytes.len > 32) return error.InputTooLong;
 
     var result: [32]u8 = [_]u8{0} ** 32;
@@ -53,7 +53,7 @@ pub fn bytesToBytes32(bytes: []const u8) ![32]u8 {
     return result;
 }
 
-pub fn bytesToU256(bytes: []const u8) !u256 {
+pub fn bytes_to_u256(bytes: []const u8) !u256 {
     if (bytes.len > 32) return error.InvalidLength;
 
     var padded: [32]u8 = [_]u8{0} ** 32;
@@ -64,7 +64,7 @@ pub fn bytesToU256(bytes: []const u8) !u256 {
     return std.mem.readInt(u256, &padded, .big);
 }
 
-pub fn u256ToBytes(value: u256) ![]u8 {
+pub fn u256_to_bytes(value: u256) ![]u8 {
     var temp: [32]u8 = undefined;
     std.mem.writeInt(u256, &temp, value, .big);
 
@@ -73,7 +73,7 @@ pub fn u256ToBytes(value: u256) ![]u8 {
     return result;
 }
 
-pub fn u32ToBytes32(value: u32) [32]u8 {
+pub fn u32_to_bytes32(value: u32) [32]u8 {
     var result: [32]u8 = [_]u8{0} ** 32;
     var temp: [4]u8 = undefined;
     std.mem.writeInt(u32, &temp, value, .big);
@@ -81,7 +81,7 @@ pub fn u32ToBytes32(value: u32) [32]u8 {
     return result;
 }
 
-pub fn u32ToBytes(value: u32) ![]u8 {
+pub fn u32_to_bytes(value: u32) ![]u8 {
     var temp: [4]u8 = undefined;
     const result = try allocator.alloc(u8, 32);
 
@@ -96,7 +96,7 @@ pub fn u32ToBytes(value: u32) ![]u8 {
     return result;
 }
 
-pub fn u8ToBytes(value: u8) ![]u8 {
+pub fn u8_to_bytes(value: u8) ![]u8 {
     var result = try allocator.alloc(u8, 32);
     // Zero initialize
     @memset(result, 0);
@@ -105,7 +105,7 @@ pub fn u8ToBytes(value: u8) ![]u8 {
     return result;
 }
 
-pub fn boolToBytes(value: bool) ![]u8 {
+pub fn bool_to_bytes(value: bool) ![]u8 {
     var result = try allocator.alloc(u8, 32);
     // Zero initialize
     @memset(result, 0);
@@ -114,7 +114,7 @@ pub fn boolToBytes(value: bool) ![]u8 {
     return result;
 }
 
-pub fn bytesToAddress(bytes: []const u8) !ValueStorage.Address {
+pub fn bytes_to_address(bytes: []const u8) !ValueStorage.Address {
     if (bytes.len != 20 and bytes.len != 32) return error.InvalidLength;
 
     var result: ValueStorage.Address = undefined;
@@ -141,32 +141,32 @@ pub fn bytesToAddress(bytes: []const u8) !ValueStorage.Address {
     return result;
 }
 
-pub fn addressToBytes(address: ValueStorage.Address) ![]u8 {
+pub fn address_to_bytes(address: ValueStorage.Address) ![]u8 {
     var result: []u8 = try allocator.alloc(u8, 32);
     std.mem.copyBackwards(u8, result[12..32], &address);
     return result;
 }
 
-pub fn dupeString(str: []const u8) ![]u8 {
+pub fn dupe_string(str: []const u8) ![]u8 {
     const result = try allocator.alloc(u8, str.len);
     std.mem.copyForwards(u8, result, str);
     return result;
 }
 
-pub fn isSliceUndefined(slice: []const u8) bool {
+pub fn is_slice_undefined(slice: []const u8) bool {
     return slice.ptr == undefined or slice.len == 0;
 }
 
 pub const AddressUtils = struct {
     pub fn from_bytes(self: @This(), bytes: []u8) !ValueStorage.Address {
         _ = self;
-        const result = try bytesToAddress(bytes);
+        const result = try bytes_to_address(bytes);
         return result;
     }
 
     pub fn to_bytes(self: @This(), value: ValueStorage.Address) ![]u8 {
         _ = self;
-        const result = try addressToBytes(value);
+        const result = try address_to_bytes(value);
         return result;
     }
 
@@ -186,13 +186,13 @@ pub const AddressUtils = struct {
 pub const U256Utils = struct {
     pub fn from_bytes(self: @This(), bytes: []u8) !u256 {
         _ = self;
-        const result = try bytesToU256(bytes);
+        const result = try bytes_to_u256(bytes);
         return result;
     }
 
     pub fn to_bytes(self: @This(), value: u256) ![]u8 {
         _ = self;
-        const result = try u256ToBytes(value);
+        const result = try u256_to_bytes(value);
         return result;
     }
 };
@@ -223,7 +223,7 @@ pub fn is_primitives(comptime T: type) bool {
     };
 }
 
-pub fn getValueUtils(comptime T: type) type {
+pub fn get_value_utils(comptime T: type) type {
     return switch (T) {
         u256 => U256Utils,
         ValueStorage.Address => AddressUtils,
@@ -231,6 +231,7 @@ pub fn getValueUtils(comptime T: type) type {
     };
 }
 
+// Todo, make all x_tobytes32 to this function
 pub fn abi_encode(comptime T: type, value: T) ![32]u8 {
     var result: [32]u8 = [_]u8{0} ** 32; // Zero initialized
 
@@ -240,7 +241,7 @@ pub fn abi_encode(comptime T: type, value: T) ![32]u8 {
             std.mem.copyForwards(u8, result[12..], &value);
         },
         u256 => {
-            const bytes = try u256ToBytes(value);
+            const bytes = try u256_to_bytes(value);
             std.mem.copyForwards(u8, &result, bytes);
         },
         bool => {
@@ -259,7 +260,7 @@ pub fn abi_encode(comptime T: type, value: T) ![32]u8 {
 
 // @Copyright: resue code in https://github.com/chrisco512/zigitrum
 // Converts a Zig type to a Solidity ABI type string
-pub fn zigToSolidityType(T: type) []const u8 {
+pub fn zig_to_solidity_type(T: type) []const u8 {
     return switch (@typeInfo(T)) {
         .Int => |info| switch (info.signedness) {
             .signed => switch (info.bits) {
@@ -297,51 +298,51 @@ pub fn zigToSolidityType(T: type) []const u8 {
 pub fn method_router(selector: [4]u8, data: []u8, contract: *erc20.ERC20) !void {
     switch (@as(u32, selector[0]) << 24 | @as(u32, selector[1]) << 16 | @as(u32, selector[2]) << 8 | @as(u32, selector[3])) {
         @as(u32, INITIATE_SELECTOR[0]) << 24 | @as(u32, INITIATE_SELECTOR[1]) << 16 | @as(u32, INITIATE_SELECTOR[2]) << 8 | @as(u32, INITIATE_SELECTOR[3]) => {
-            const total_supply = try bytesToU256(data);
+            const total_supply = try bytes_to_u256(data);
             try contract.initiate(total_supply);
         },
         @as(u32, TOTAL_SUPPLY_SELECTOR[0]) << 24 | @as(u32, TOTAL_SUPPLY_SELECTOR[1]) << 16 | @as(u32, TOTAL_SUPPLY_SELECTOR[2]) << 8 | @as(u32, TOTAL_SUPPLY_SELECTOR[3]) => {
-            const total_supply = try contract.totalSupply();
+            const total_supply = try contract.total_supply();
             hostio.write_output(total_supply);
         },
         @as(u32, BALANCE_OF_SELECTOR[0]) << 24 | @as(u32, BALANCE_OF_SELECTOR[1]) << 16 | @as(u32, BALANCE_OF_SELECTOR[2]) << 8 | @as(u32, BALANCE_OF_SELECTOR[3]) => {
             // const decoded = try decoder.decodeAbiFunction([20]u8, allocator, encoded, .{});
             // try stdout.print("balanceOf called for address: 0x{}\n", .{std.fmt.fmtSliceHexLower(&decoded.result)});
             // Add balanceOf logic here
-            const address = try bytesToAddress(data);
+            const address = try bytes_to_address(data);
             const balance = try contract.balanceOf(address);
-            const balance_bytes = try u256ToBytes(balance);
+            const balance_bytes = try u256_to_bytes(balance);
             hostio.write_output(balance_bytes);
         },
         @as(u32, TRANSFER_SELECTOR[0]) << 24 | @as(u32, TRANSFER_SELECTOR[1]) << 16 | @as(u32, TRANSFER_SELECTOR[2]) << 8 | @as(u32, TRANSFER_SELECTOR[3]) => {
             // try stdout.print("transfer called\n", .{});
             // Add transfer logic here
-            const to = try bytesToAddress(data[0..32]);
-            const value = try bytesToU256(data[32..]);
+            const to = try bytes_to_address(data[0..32]);
+            const value = try bytes_to_u256(data[32..]);
             const success = try contract.transfer(to, value);
             if (!success) {
                 @panic("error transfer");
             }
         },
         @as(u32, ALLOWANCE_SELECTOR[0]) << 24 | @as(u32, ALLOWANCE_SELECTOR[1]) << 16 | @as(u32, ALLOWANCE_SELECTOR[2]) << 8 | @as(u32, ALLOWANCE_SELECTOR[3]) => {
-            const owner_addr = try bytesToAddress(data[0..32]);
-            const spender_addr = try bytesToAddress(data[32..64]);
+            const owner_addr = try bytes_to_address(data[0..32]);
+            const spender_addr = try bytes_to_address(data[32..64]);
             const allowance = try contract.allowance(owner_addr, spender_addr);
-            const allowance_bytes = try u256ToBytes(allowance);
+            const allowance_bytes = try u256_to_bytes(allowance);
             hostio.write_output(allowance_bytes);
         },
         @as(u32, APPROVE_SELECTOR[0]) << 24 | @as(u32, APPROVE_SELECTOR[1]) << 16 | @as(u32, APPROVE_SELECTOR[2]) << 8 | @as(u32, APPROVE_SELECTOR[3]) => {
-            const spender = try bytesToAddress(data[0..32]);
-            const value = try bytesToU256(data[32..]);
+            const spender = try bytes_to_address(data[0..32]);
+            const value = try bytes_to_u256(data[32..]);
             const success = try contract.approve(spender, value);
             if (!success) {
                 @panic("error approve");
             }
         },
         @as(u32, TRANSFER_FROM_SELECTOR[0]) << 24 | @as(u32, TRANSFER_FROM_SELECTOR[1]) << 16 | @as(u32, TRANSFER_FROM_SELECTOR[2]) << 8 | @as(u32, TRANSFER_FROM_SELECTOR[3]) => {
-            const from = try bytesToAddress(data[0..32]);
-            const to = try bytesToAddress(data[32..64]);
-            const value = try bytesToU256(data[64..]);
+            const from = try bytes_to_address(data[0..32]);
+            const to = try bytes_to_address(data[32..64]);
+            const value = try bytes_to_u256(data[64..]);
             const success = try contract.transferFrom(from, to, value);
             if (!success) {
                 @panic("error transferFrom");
@@ -355,17 +356,17 @@ pub fn method_router(selector: [4]u8, data: []u8, contract: *erc20.ERC20) !void 
         },
         @as(u32, DECIMALS_SELECTOR[0]) << 24 | @as(u32, DECIMALS_SELECTOR[1]) << 16 | @as(u32, DECIMALS_SELECTOR[2]) << 8 | @as(u32, DECIMALS_SELECTOR[3]) => {
             const decimals = contract.decimals();
-            const decimals_bytes = try u32ToBytes(decimals);
+            const decimals_bytes = try u32_to_bytes(decimals);
             hostio.write_output(decimals_bytes);
         },
         // @as(u32, NAME_SELECTOR[0]) << 24 | @as(u32, NAME_SELECTOR[1]) << 16 | @as(u32, NAME_SELECTOR[2]) << 8 | @as(u32, NAME_SELECTOR[3]) => {
         //     const name = try contract.name();
-        //     const str_slice = try dupeString(name);
+        //     const str_slice = try dupe_string(name);
         //     write_output(str_slice);
         // },
         // @as(u32, SYMBOL_SELECTOR[0]) << 24 | @as(u32, SYMBOL_SELECTOR[1]) << 16 | @as(u32, SYMBOL_SELECTOR[2]) << 8 | @as(u32, SYMBOL_SELECTOR[3]) => {
         //     const symbol = try contract.symbol();
-        //     const str_slice = try dupeString(symbol);
+        //     const str_slice = try dupe_string(symbol);
         //     write_output(str_slice);
         // },
         else => {},
@@ -376,7 +377,7 @@ pub fn method_router(selector: [4]u8, data: []u8, contract: *erc20.ERC20) !void 
 // Instead of keccak256() in hostio.zig running on runtime,
 // this fn will only be used to compute the keccak256 hash during compile time
 // Comptime fn for computing the keccak256 hash of a string
-pub fn hashAtComptime(comptime data: []const u8) [32]u8 {
+pub fn hash_at_comptime(comptime data: []const u8) [32]u8 {
     comptime {
         @setEvalBranchQuota(100000);
         var hash: [32]u8 = undefined;

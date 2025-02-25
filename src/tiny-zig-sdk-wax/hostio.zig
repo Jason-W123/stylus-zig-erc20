@@ -44,7 +44,7 @@ pub fn write_output(data: []u8) void {
 pub fn keccak256(data: []u8) ![32]u8 {
     const hashed = try utils.allocator.alloc(u8, 32);
     native_keccak256(@ptrCast(data), data.len, @ptrCast(hashed));
-    const output = try utils.bytesToBytes32(hashed);
+    const output = try utils.bytes_to_bytes32(hashed);
     return output;
 }
 
@@ -52,7 +52,7 @@ pub fn keccak256(data: []u8) ![32]u8 {
 pub fn get_msg_sender() !ValueStorage.Address {
     const sender = try utils.allocator.alloc(u8, 32);
     msg_sender(@ptrCast(sender));
-    return try utils.bytesToAddress(sender);
+    return try utils.bytes_to_address(sender);
 }
 
 // Emit EVM log

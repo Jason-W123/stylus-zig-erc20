@@ -11,7 +11,7 @@ pub fn Indexed(comptime T: type) type {
     };
 }
 
-fn isIndexed(comptime T: type) bool {
+fn is_indexed(comptime T: type) bool {
     const type_info = @typeInfo(T);
     return switch (type_info) {
         .Struct => std.mem.indexOf(u8, @typeName(T), "event.Indexed") != null,
@@ -20,7 +20,7 @@ fn isIndexed(comptime T: type) bool {
 }
 
 // @Copyright: resue code in https://github.com/chrisco512/zigitrum
-pub fn getEventSelector(comptime name: []const u8, Params: type) ![32]u8 {
+pub fn get_event_selector(comptime name: []const u8, Params: type) ![32]u8 {
     // building selector as compile time
     const signature = comptime blk: {
         var sig: []const u8 = name;
@@ -30,29 +30,29 @@ pub fn getEventSelector(comptime name: []const u8, Params: type) ![32]u8 {
             if (i > 0) sig = sig ++ ",";
             const field_type = field.type;
 
-            if (isIndexed(field_type)) {
-                sig = sig ++ utils.zigToSolidityType(field_type.inner_type);
+            if (is_indexed(field_type)) {
+                sig = sig ++ utils.zig_to_solidity_type(field_type.inner_type);
             } else {
-                sig = sig ++ utils.zigToSolidityType(field_type);
+                sig = sig ++ utils.zig_to_solidity_type(field_type);
             }
         }
         sig = sig ++ ")";
 
         // We shouldn't use hostio.keccak256 here, because this is running on compile time
-        break :blk utils.hashAtComptime(sig);
+        break :blk utils.hash_at_comptime(sig);
     };
     return signature;
 }
 
 pub fn EventEmitter(comptime name: []const u8, comptime Params: type) type {
     // Compute signature at compile time
-    const signature_selector = try getEventSelector(name, Params);
+    const signature_selector = try get_event_selector(name, Params);
 
     // Pre-compute indexed fields at compile time
     const indexed_fields = comptime blk: {
         var fields: [std.meta.fields(Params).len]bool = undefined;
         for (std.meta.fields(Params), 0..) |field, i| {
-            fields[i] = isIndexed(@TypeOf(@field(@as(Params, undefined), field.name)));
+            fields[i] = is_indexed(@TypeOf(@field(@as(Params, undefined), field.name)));
         }
         break :blk fields;
     };
@@ -80,7 +80,7 @@ pub fn EventEmitter(comptime name: []const u8, comptime Params: type) type {
                     try topics.append(encoded);
                 } else {
                     const encoded = try utils.abi_encode(@TypeOf(value), value);
-                    const encoded_bytes = try utils.bytes32ToBytes(encoded);
+                    const encoded_bytes = try utils.bytes32_to_bytes(encoded);
                     try data.appendSlice(encoded_bytes);
                 }
             }
